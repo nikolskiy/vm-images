@@ -3,7 +3,7 @@
 packer.log
 
 # Builds
-builds/
+/builds/
 
 # Ansible
 *.retry
