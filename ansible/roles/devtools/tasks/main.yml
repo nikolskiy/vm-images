@@ -1,0 +1,10 @@
+# ansible/roles/devtools/tasks/main.yml
+- name: Install Python pip
+  apt:
+    name: python3-pip
+    state: present
+
+- name: Install ShellCheck
+  apt:
+    name: shellcheck
+    state: present

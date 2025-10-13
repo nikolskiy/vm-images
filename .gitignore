@@ -1,0 +1,9 @@
+# Packer
+.packer_cache/
+packer.log
+
+# Builds
+builds/
+
+# Ansible
+*.retry
