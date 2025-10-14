@@ -6,6 +6,7 @@ requires-python = ">=3.12"
 dependencies = [
     "ansible",
     "ansible-lint",
+    "sh>=2.2.2",
     "typer",
 ]
 
