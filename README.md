@@ -5,16 +5,36 @@ This project builds customized developer environment VM images using Packer and 
 ## Prerequisites
 
 - [Packer](https://www.packer.io/downloads)
-- [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+- [uv](https://github.com/astral-sh/uv) - An extremely fast Python package installer and resolver.
 - [QEMU](https://www.qemu.org/download/) (for QEMU builds)
 - [VirtualBox](https://www.virtualbox.org/wiki/Downloads) (for VirtualBox builds)
 
 ## How to Build
 
-1.  **Customize your build (optional):**
+1.  **Set up the Python virtual environment:**
+    It is recommended to use a virtual environment to install the Python dependencies. This project is configured to use `uv`.
+
+    Create the virtual environment
+
+    ```bash
+    uv venv
+    ```
+
+    Install the dependencies from pyproject.toml
+
+    ```bash
+    uv sync
+    ```
+
+    Activate the virtual environment
+    ```bash
+    source .venv/bin/activate
+    ```
+
+2.  **Customize your build (optional):**
     You can modify the variables in `packer/common/variables.pkr.hcl` to change the VM's CPU, memory, disk size, and SSH credentials.
 
-2.  **Build the VM image:**
+3.  **Build the VM image:**
     From the root of the project, run the `make build` command with the `VM` variable set to the desired Packer template.
 
     **For QEMU:**

@@ -7,3 +7,13 @@ packer.log
 
 # Ansible
 *.retry
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/

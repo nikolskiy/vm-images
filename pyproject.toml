@@ -1,0 +1,14 @@
+[project]
+name = "vm-images"
+version = "0.1.0"
+description = "Packer and Ansible scripts for building developer VM images."
+requires-python = ">=3.12"
+dependencies = [
+    "ansible",
+    "ansible-lint",
+    "typer",
+]
+
+
+[tool.setuptools.packages.find]
+where = ["src"]
