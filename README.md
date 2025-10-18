@@ -1,15 +1,13 @@
 # Developer Environment VM Images
 
-This project builds customized developer environment VM images using Packer and Ansible. It supports both QEMU/KVM and VirtualBox for local development.
+This project uses Ansible to configure developer environments.
 
 ## Prerequisites
 
-- [Packer](https://www.packer.io/downloads)
 - [uv](https://github.com/astral-sh/uv) - An extremely fast Python package installer and resolver.
-- [QEMU](https://www.qemu.org/download/) (for QEMU builds)
-- [VirtualBox](https://www.virtualbox.org/wiki/Downloads) (for VirtualBox builds)
+- [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 
-## How to Build
+## How to Run a Playbook
 
 1.  **Set up the Python virtual environment:**
     It is recommended to use a virtual environment to install the Python dependencies. This project is configured to use `uv`.
@@ -31,30 +29,14 @@ This project builds customized developer environment VM images using Packer and 
     source .venv/bin/activate
     ```
 
-2.  **Customize your build (optional):**
-    You can modify the variables in `packer/common/variables.pkr.hcl` to change the VM's CPU, memory, disk size, and SSH credentials.
+2.  **Run a playbook:**
+    From the root of the project, run the `cli` to execute a playbook.
 
-3.  **Build the VM image:**
-    From the root of the project, run the `make build` command with the `VM` variable set to the desired Packer template.
-
-    **For QEMU:**
     ```bash
-    make build VM=ubuntu-dev-qemu
+    ./cli run <playbook-name>
     ```
 
-    **For VirtualBox:**
+    You can list the available playbooks with:
     ```bash
-    make build VM=ubuntu-dev-virtualbox
+    ./cli list
     ```
-
-3.  **Find your image:**
-    The final VM image will be located in the `builds/` directory. QEMU images will be in `.qcow2` format, and VirtualBox images will be in `.ova` format.
-
-## How to Validate
-
-You can validate the Packer templates without running a full build:
-
-```bash
-make validate VM=ubuntu-dev-qemu
-make validate VM=ubuntu-dev-virtualbox
-```

@@ -4,13 +4,8 @@ import typer
 from commands import builder
 
 app = typer.Typer(pretty_exceptions_enable=False)
-vm_app = typer.Typer(pretty_exceptions_enable=False)
-app.add_typer(vm_app, name="vm")
-
-vm_app.command("build")(builder.build)
-vm_app.command("validate")(builder.validate)
-vm_app.command("clean")(builder.clean)
-vm_app.command("list")(builder.list_vms)
+app.command("run")(builder.playbook)
+app.command("list")(builder.list_playbooks)
 
 if __name__ == "__main__":
     app()
