@@ -1,5 +1,4 @@
-import subprocess
-import os
+from sh import packer
 import shutil
 from pathlib import Path
 
@@ -13,22 +12,28 @@ PACKER_COMMON_VARS = ROOT_DIR / "packer/common/variables.pkr.hcl"
 def build(vm_name: str):
     """Builds a VM image using Packer."""
     print(f"Building VM image for {vm_name}...")
-    cmd = [
-        "packer", "build",
-        "-var-file", str(PACKER_COMMON_VARS),
-        str(PACKER_BUILDS_DIR / f"{vm_name}.pkr.hcl")
-    ]
-    subprocess.run(cmd, check=True, cwd=ROOT_DIR)
+    packer.init(
+        ".",
+        _cwd=ROOT_DIR
+    )
+    packer.build(
+        "-var-file", str(ROOT_DIR / "packer/common/dev.auto.pkrvars.hcl"),
+        str(PACKER_BUILDS_DIR / f"{vm_name}.pkr.hcl"),
+        _cwd=ROOT_DIR
+    )
 
 def validate(vm_name: str):
     """Validates a Packer template."""
     print(f"Validating Packer template for {vm_name}...")
-    cmd = [
-        "packer", "validate",
+    #packer.validate(
+    #    "-var-file", str(PACKER_COMMON_VARS),
+    #    str(PACKER_BUILDS_DIR / f"{vm_name}.pkr.hcl"),
+    #    _cwd=ROOT_DIR
+    #)
+    print(
         "-var-file", str(PACKER_COMMON_VARS),
-        str(PACKER_BUILDS_DIR / f"{vm_name}.pkr.hcl")
-    ]
-    subprocess.run(cmd, check=True, cwd=ROOT_DIR)
+        str(PACKER_BUILDS_DIR / f"{vm_name}.pkr.hcl"),
+    )
 
 def clean():
     """Cleans up build artifacts."""
