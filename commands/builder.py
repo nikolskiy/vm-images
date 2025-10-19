@@ -1,5 +1,5 @@
 from sh import ansible_playbook
-import shutil
+import sys
 from pathlib import Path
 
 # Project root
@@ -11,7 +11,9 @@ def playbook(playbook_name: str):
     print(f"Running playbook {playbook_name}...")
     ansible_playbook(
         str(ANSIBLE_DIR / f"{playbook_name}.yml"),
-        _cwd=ANSIBLE_DIR
+        _cwd=ANSIBLE_DIR,
+        _out=sys.stdout,
+        _err=sys.stderr
     )
 
 

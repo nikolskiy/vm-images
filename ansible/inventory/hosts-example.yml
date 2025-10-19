@@ -1,0 +1,10 @@
+# Make a copy of the file and call it hosts.yaml
+# Updates hosts as needed specifying user, password, etc.
+
+all:
+  hosts:
+    node:
+      ansible_host: 192.168.1.111
+      ansible_user: example
+      ansible_password: example
+      ansible_become_pass: example

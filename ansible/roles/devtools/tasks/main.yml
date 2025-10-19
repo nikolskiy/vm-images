@@ -1,10 +1,5 @@
 # ansible/roles/devtools/tasks/main.yml
-- name: Install Python pip
+- name: Install Java 21
   apt:
-    name: python3-pip
-    state: present
-
-- name: Install ShellCheck
-  apt:
-    name: shellcheck
+    name: openjdk-21-jdk
     state: present

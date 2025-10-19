@@ -7,6 +7,7 @@ packer.log
 
 # Ansible
 *.retry
+/.ansible/
 
 # Python
 __pycache__/
