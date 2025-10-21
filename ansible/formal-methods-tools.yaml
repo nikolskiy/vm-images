@@ -1,0 +1,7 @@
+- name: Configure formal methods tools
+  hosts: all
+  become: true
+  roles:
+    - base
+    - devtools
+    - vscode

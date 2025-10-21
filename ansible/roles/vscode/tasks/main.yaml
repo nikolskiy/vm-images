@@ -1,4 +1,4 @@
-# ansible/roles/vscode/tasks/main.yml
+# ansible/roles/vscode/tasks/main.yaml
 - name: Add Microsoft GPG key
   ansible.builtin.apt_key:
     url: https://packages.microsoft.com/keys/microsoft.asc
@@ -25,23 +25,7 @@
 - name: Install VS Code extensions
   ansible.builtin.command: "code --install-extension {{ item }}"
   with_items:
-    - ms-python.python
     - tlaplus.vscode-ide
   become: false
   changed_when: true
   when: "item not in vscode_installed_extensions.stdout"
-
-- name: Get current favorite apps
-  ansible.builtin.command: gsettings get org.gnome.shell favorite-apps
-  register: vscode_favorite_apps
-  changed_when: false
-  become: false
-  check_mode: false
-
-- name: Pin VS Code to Ubuntu panel
-  ansible.builtin.command: >
-    gsettings set org.gnome.shell favorite-apps
-    "{{ vscode_favorite_apps.stdout | regex_replace(']$', ", 'code.desktop']") }}"
-  changed_when: true
-  when: "'code.desktop' not in vscode_favorite_apps.stdout"
-  become: false

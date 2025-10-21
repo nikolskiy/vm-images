@@ -1,7 +1,0 @@
-# ansible/playbook-dev-env.yml
-- hosts: all
-  become: yes
-  roles:
-    - base
-    - devtools
-    - vscode

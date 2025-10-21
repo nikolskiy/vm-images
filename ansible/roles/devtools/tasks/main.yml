@@ -1,5 +1,0 @@
-# ansible/roles/devtools/tasks/main.yml
-- name: Install Java 21
-  ansible.builtin.apt:
-    name: openjdk-21-jdk
-    state: present

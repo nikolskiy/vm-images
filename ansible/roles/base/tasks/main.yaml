@@ -1,4 +1,4 @@
-# ansible/roles/base/tasks/main.yml
+# ansible/roles/base/tasks/main.yaml
 - name: Update apt cache
   ansible.builtin.apt:
     update_cache: true

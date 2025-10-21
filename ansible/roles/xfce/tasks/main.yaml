@@ -1,0 +1,7 @@
+- name: Add VSCode shortcut to xfce desktop
+  ansible.builtin.copy:
+    src: /usr/share/applications/code.desktop
+    dest: "~/Desktop/code.desktop"
+    remote_src: true
+    mode: '0755'
+  become: false
