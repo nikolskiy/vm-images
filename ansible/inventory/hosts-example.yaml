@@ -8,5 +8,7 @@ all:
       # lookup the IP in the Vagrantfile.
       ansible_host: 192.168.1.111
       ansible_user: example
-      ansible_password: example
+      #ansible_password: example
+      # Note that for this to work you need to generate keys there first.
+      ansible_private_key_file: /path/to/private/key/.private_key
       ansible_become_pass: example

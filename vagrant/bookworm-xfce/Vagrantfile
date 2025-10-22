@@ -39,23 +39,77 @@ Vagrant.configure("2") do |config|
 
   SHELL
 
-  # Shell provisioner to enable password authentication
+  # Provisioning script to add a user with a specific password and ssh key.
   config.vm.provision "shell", inline: <<-SHELL
-    echo "Enabling SSH password authentication..."
-
-    # Use sed to change the PasswordAuthentication setting in sshd_config
-    # This regex finds '#PasswordAuthentication no' or 'PasswordAuthentication no' 
-    # and changes it to 'PasswordAuthentication yes'
-    sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
-
-    # 3. Restart the SSH service to apply changes.
-    # Using a generic approach that works on most modern Linux systems (Ubuntu/CentOS/etc)
-    systemctl restart sshd || sudo service sshd restart
-
+    # Load environment variables from .env file
+    if [ -f "/vagrant/.env" ]; then
+      set -o allexport
+      source "/vagrant/.env"
+      set +o allexport
+    fi
+    
+    # Validate that USERNAME and PASSWORD are not empty
+    if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
+      echo "Error: USERNAME and PASSWORD must be set in the .env file." >&2
+      exit 1
+    fi
+    
+    # Validate that PUB_KEY is not empty
+    if [ -z "$PUB_KEY" ]; then
+      echo "Error: PUB_KEY is empty. Please run gen_user_key.sh before provisioning the VM." >&2
+      exit 1
+    fi
+    
+    # Check if the user already exists
+    if id "$USERNAME" &>/dev/null; then
+        echo "User '$USERNAME' already exists. Skipping user creation."
+    else
+        echo "Creating user '$USERNAME'..."
+        # Create the user with a home directory, bash as the default shell, and add to the sudo group.
+        useradd -m -s /bin/bash -G sudo $USERNAME
+        echo "User '$USERNAME' created successfully"
+    fi
+    
+    # Set the password for the user.
+    # The chpasswd command reads 'username:password' pairs from standard input.
+    echo "$USERNAME:$PASSWORD" | chpasswd
+    echo "User '$USERNAME' password was updated."
+    
+    # Setup SSH access for the user
+    HOME_DIR=$(getent passwd "$USERNAME" | cut -d: -f6)
+    SSH_DIR="$HOME_DIR/.ssh"
+    AUTHORIZED_KEYS="$SSH_DIR/authorized_keys"
+    
+    echo "Setting up SSH access for user '$USERNAME'..."
+    
+    # Create .ssh directory if it doesn't exist
+    if [ ! -d "$SSH_DIR" ]; then
+        mkdir -p "$SSH_DIR"
+        chmod 700 "$SSH_DIR"
+        chown "$USERNAME":"$USERNAME" "$SSH_DIR"
+    fi
+    
+    # We overwrite all the other existing keys!!!
+    # Add public key to authorized_keys
+    echo "$PUB_KEY" > "$AUTHORIZED_KEYS"
+    chmod 600 "$AUTHORIZED_KEYS"
+    chown "$USERNAME":"$USERNAME" "$AUTHORIZED_KEYS"
+    
+    echo "SSH access for user '$USERNAME' configured."
+    
+    echo "Checking sudo privileges for '$USERNAME'..."
+    if [ -f "/etc/sudoers.d/$USERNAME" ]; then
+        echo "User '$USERNAME' already has sudo privileges. Skipping."
+    else
+        echo "Granting sudo privileges to '$USERNAME'..."
+        # Add the user to the sudoers file with passwordless access.
+        echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME
+        # Set the correct permissions for the sudoers file.
+        chmod 0440 /etc/sudoers.d/$USERNAME
+    
+        echo "Sudo privileges granted to '$USERNAME'."
+    fi
   SHELL
-
-  # Provisioning script to add a user with a specific password.
-  config.vm.provision "shell", path: "create_user.sh"
 
   # Reboot the machine to apply desktop environment changes.
   config.vm.provision "shell", inline: "echo 'Rebooting...' && sudo reboot", run: "once"
