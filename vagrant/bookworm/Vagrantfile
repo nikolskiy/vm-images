@@ -1,0 +1,116 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  # Use the latest stable official Debian 64-bit box (currently Debian 12 "Bookworm").
+  # Vagrant will automatically check for updates to this box.
+  config.vm.box = "debian/bookworm64"
+
+  # Configure the VirtualBox provider.
+  config.vm.provider "virtualbox" do |vb|
+    # Display the VirtualBox GUI when the machine is booted.
+    vb.gui = true
+
+    # Allocate more resources for a better desktop experience.
+    # Adjust these values based on your host machine's capabilities.
+    vb.memory = "4096"  # 4 GB of RAM
+    vb.cpus = 2         # 2 CPU cores
+  end
+
+  # Assign a static private IP address to the VM.
+  config.vm.network "private_network", ip: "192.168.56.12"
+
+  # Provision the machine with a shell script to install the desktop environment.
+  # This script runs the first time you `vagrant up` the machine.
+  config.vm.provision "shell", inline: <<-SHELL
+    echo "Updating package lists..."
+    apt-get update
+
+    # Use DEBIAN_FRONTEND=noninteractive to prevent interactive prompts during installation.
+    export DEBIAN_FRONTEND=noninteractive
+    
+    # Install the full XFCE desktop meta-package and the LightDM login manager.
+    # Using task-xfce-desktop ensures all common desktop components are included.
+    apt-get install -y openssh-server
+
+    # Update all the packages
+    apt-get upgrade -y
+
+  SHELL
+
+  # Provisioning script to add a user with a specific password and ssh key.
+  config.vm.provision "shell", inline: <<-SHELL
+    # Load environment variables from .env file
+    if [ -f "/vagrant/.env" ]; then
+      set -o allexport
+      source "/vagrant/.env"
+      set +o allexport
+    fi
+    
+    # Validate that USERNAME and PASSWORD are not empty
+    if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
+      echo "Error: USERNAME and PASSWORD must be set in the .env file." >&2
+      exit 1
+    fi
+    
+    # Validate that PUB_KEY is not empty
+    if [ -z "$PUB_KEY" ]; then
+      echo "Error: PUB_KEY is empty. Please run gen_user_key.sh before provisioning the VM." >&2
+      exit 1
+    fi
+    
+    # Check if the user already exists
+    if id "$USERNAME" &>/dev/null; then
+        echo "User '$USERNAME' already exists. Skipping user creation."
+    else
+        echo "Creating user '$USERNAME'..."
+        # Create the user with a home directory, bash as the default shell, and add to the sudo group.
+        useradd -m -s /bin/bash -G sudo $USERNAME
+        echo "User '$USERNAME' created successfully"
+    fi
+    
+    # Set the password for the user.
+    # The chpasswd command reads 'username:password' pairs from standard input.
+    echo "$USERNAME:$PASSWORD" | chpasswd
+    echo "User '$USERNAME' password was updated."
+    
+    # Setup SSH access for the user
+    HOME_DIR=$(getent passwd "$USERNAME" | cut -d: -f6)
+    SSH_DIR="$HOME_DIR/.ssh"
+    AUTHORIZED_KEYS="$SSH_DIR/authorized_keys"
+    
+    echo "Setting up SSH access for user '$USERNAME'..."
+    
+    # Create .ssh directory if it doesn't exist
+    if [ ! -d "$SSH_DIR" ]; then
+        mkdir -p "$SSH_DIR"
+        chmod 700 "$SSH_DIR"
+        chown "$USERNAME":"$USERNAME" "$SSH_DIR"
+    fi
+    
+    # We overwrite all the other existing keys!!!
+    # Add public key to authorized_keys
+    echo "$PUB_KEY" > "$AUTHORIZED_KEYS"
+    chmod 600 "$AUTHORIZED_KEYS"
+    chown "$USERNAME":"$USERNAME" "$AUTHORIZED_KEYS"
+    
+    echo "SSH access for user '$USERNAME' configured."
+    
+    echo "Checking sudo privileges for '$USERNAME'..."
+    if [ -f "/etc/sudoers.d/$USERNAME" ]; then
+        echo "User '$USERNAME' already has sudo privileges. Skipping."
+    else
+        echo "Granting sudo privileges to '$USERNAME'..."
+        # Add the user to the sudoers file with passwordless access.
+        echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME
+        # Set the correct permissions for the sudoers file.
+        chmod 0440 /etc/sudoers.d/$USERNAME
+    
+        echo "Sudo privileges granted to '$USERNAME'."
+    fi
+  SHELL
+
+  # Reboot the machine to apply desktop environment changes.
+  config.vm.provision "shell", inline: "echo 'Rebooting...' && sudo reboot", run: "once"
+
+end
