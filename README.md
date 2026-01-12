@@ -6,7 +6,7 @@ This project provides a flexible framework for creating and configuring develope
 
 The project is designed with a clear separation of concerns:
 
--   **VM Creation**: Handled by [Vagrant](https://www.vagrantup.com/). The `vagrant/` directory contains configurations to build base virtual machines.
+-   **VM Creation**: Handled by [Vagrant](https://www.vagrantup.com/) using the Libvirt provider. The `vagrant/` directory contains configurations to build base virtual machines.
 -   **VM Configuration**: Handled by [Ansible](https://www.ansible.com/). The `ansible/` directory contains playbooks to provision the VMs with specific development tools and environments.
 
 This separation allows you to apply Ansible playbooks to any existing machine (not just those created by this project's Vagrant files) or to create a single base VM and then provision multiple "flavors" from it using different playbooks.
@@ -34,6 +34,12 @@ This separation allows you to apply Ansible playbooks to any existing machine (n
 Before you begin, ensure you have the following tools installed on your host machine:
 
 -   [Vagrant](https://www.vagrantup.com/downloads)
+-   To use the KVM/Libvirt provider (recommended default), install the necessary packages and the plugin:
+    ```bash
+    # On Ubuntu/Debian
+    sudo apt install qemu-kvm libvirt-daemon-system libvirt-dev
+    vagrant plugin install vagrant-libvirt
+    ```
 -   [uv](https://github.com/astral-sh/uv) (for Python environment management)
 -   You don't need to install [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) on your host machine. It will be installed via `uv`.
 
@@ -84,7 +90,7 @@ Before running a playbook, you need to tell Ansible which machine to connect to.
     cp ansible/inventory/hosts-example.yaml ansible/inventory/hosts.yaml
     ```
 
-2.  **Update `ansible/inventory/hosts.yaml`** with the IP address or hostname of your target machine. If you are using the Vagrant machine, it's typically something like `192.168.56.2` (check the specific Vagrantfile).
+2.  **Update `ansible/inventory/hosts.yaml`** with the IP address or hostname of your target machine. If you are using the Vagrant machine, it's typically something like `192.168.156.12` (check the specific Vagrantfile).
 
 #### Running a Playbook
 

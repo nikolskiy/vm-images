@@ -11,6 +11,12 @@ This directory contains everything needed to build a Debian Bookworm OS with the
 ## Prerequisites
 
 - [Vagrant](https://www.vagrantup.com/) must be installed on the host system.
+-   To use the KVM/Libvirt provider, install the necessary packages and the plugin:
+    ```bash
+    # On Ubuntu/Debian
+    sudo apt install qemu-kvm libvirt-daemon-system libvirt-dev
+    vagrant plugin install vagrant-libvirt
+    ```
 
 ## Usage
 
